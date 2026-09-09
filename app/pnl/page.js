@@ -1,72 +1,61 @@
 'use client'
 import { useState } from 'react'
 
-const filters = ['today','week','month','year','all']
-const labels = { today:'Today', week:'This week', month:'Month', year:'Year', all:'All time' }
-
-const mockData = {
-  today: { pnl:340, trades:2, wins:1, losses:1, wr:50, best:340, worst:-201, bars:[{label:'Morning',pnl:340},{label:'Afternoon',pnl:-201}] },
-  week: { pnl:1426, trades:6, wins:2, losses:4, wr:33, best:731, worst:-253, bars:[{label:'Mon',pnl:996},{label:'Tue',pnl:-201},{label:'Wed',pnl:340},{label:'Thu',pnl:-175},{label:'Fri',pnl:466}] },
-  month: { pnl:2090, trades:22, wins:8, losses:14, wr:36, best:1240, worst:-380, bars:[{label:'W1',pnl:1240},{label:'W2',pnl:-380},{label:'W3',pnl:890},{label:'W4',pnl:340}] },
-  year: { pnl:13440, trades:180, wins:72, losses:108, wr:40, best:3200, worst:-800, bars:[{label:'Jan',pnl:2100},{label:'Feb',pnl:-800},{label:'Mar',pnl:3200},{label:'Sep',pnl:340}] },
-  all: { pnl:13440, trades:180, wins:72, losses:108, wr:40, best:3200, worst:-800, bars:[{label:'Aug',pnl:3100},{label:'Sep',pnl:340}] },
+const PERIODS = ['Today','Week','Month','Year','All']
+const DATA = {
+  Today: { pnl:340, trades:2, wins:1, losses:1, wr:50, best:340, worst:-201, portfolio:5019, bars:[{l:'Morning',v:340},{l:'Afternoon',v:-201}] },
+  Week:  { pnl:1426, trades:6, wins:2, losses:4, wr:33, best:731, worst:-253, portfolio:6426, bars:[{l:'Mon',v:996},{l:'Tue',v:-201},{l:'Wed',v:340},{l:'Thu',v:-175},{l:'Fri',v:466}] },
+  Month: { pnl:2090, trades:22, wins:8, losses:14, wr:36, best:1240, worst:-380, portfolio:7090, bars:[{l:'W1',v:1240},{l:'W2',v:-380},{l:'W3',v:890},{l:'W4',v:340}] },
+  Year:  { pnl:13440, trades:180, wins:72, losses:108, wr:40, best:3200, worst:-800, portfolio:18440, bars:[{l:'Jan',v:2100},{l:'Feb',v:-800},{l:'Mar',v:3200},{l:'Apr',v:1400},{l:'May',v:-600},{l:'Jun',v:2800},{l:'Jul',v:1900},{l:'Aug',v:3100},{l:'Sep',v:340}] },
+  All:   { pnl:13440, trades:180, wins:72, losses:108, wr:40, best:3200, worst:-800, portfolio:18440, bars:[{l:'Aug',v:3100},{l:'Sep',v:340}] },
 }
+const fmt = v => (v>=0?'+₹':'-₹')+Math.abs(v).toLocaleString()
 
 export default function PnL() {
-  const [period, setPeriod] = useState('week')
-  const d = mockData[period]
-  const max = Math.max(...d.bars.map(b => Math.abs(b.pnl)))
-  const fmt = v => v >= 0 ? `+₹${v.toLocaleString()}` : `-₹${Math.abs(v).toLocaleString()}`
+  const [period, setPeriod] = useState('Week')
+  const d = DATA[period]
+  const max = Math.max(...d.bars.map(b=>Math.abs(b.v)),1)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white px-4 pt-12 pb-4 shadow-sm">
-        <p className="text-xs text-gray-400 uppercase font-medium mb-1">P&L Report</p>
-        <h1 className={`text-3xl font-bold ${d.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>{fmt(d.pnl)}</h1>
-        <p className="text-sm text-gray-500 mt-1">{d.wins}W · {d.losses}L · {d.wr}% win rate</p>
+    <div style={{minHeight:'100dvh',background:'#f2f2f7'}}>
+      <div style={{background:'linear-gradient(160deg,#1d4ed8 0%,#2563eb 60%,#3b82f6 100%)',padding:'56px 20px 24px',paddingTop:'calc(56px + env(safe-area-inset-top))'}}>
+        <p style={{color:'rgba(255,255,255,0.75)',fontSize:'13px',marginBottom:'4px'}}>P&L Report</p>
+        <h1 style={{color:'white',fontSize:'38px',fontWeight:'700',letterSpacing:'-1px',lineHeight:1}}>{fmt(d.pnl)}</h1>
+        <p style={{color:'rgba(255,255,255,0.7)',fontSize:'14px',marginTop:'6px'}}>{d.wins}W · {d.losses}L · {d.wr}% win rate</p>
       </div>
-
-      <div className="flex gap-2 px-4 py-3 overflow-x-auto">
-        {filters.map(f => (
-          <button key={f} onClick={() => setPeriod(f)}
-            className={`whitespace-nowrap text-xs px-4 py-2 rounded-full font-medium transition-all ${period === f ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}>
-            {labels[f]}
+      <div style={{padding:'14px 16px 0',display:'flex',gap:'8px',overflowX:'auto'}}>
+        {PERIODS.map(p=>(
+          <button key={p} onClick={()=>setPeriod(p)} style={{whiteSpace:'nowrap',padding:'8px 18px',borderRadius:'20px',border:'none',fontSize:'14px',fontWeight:'600',cursor:'pointer',background:period===p?'#111827':'white',color:period===p?'white':'#6b7280',boxShadow:period===p?'0 2px 8px rgba(17,24,39,0.2)':'0 1px 4px rgba(0,0,0,0.06)'}}>
+            {p}
           </button>
         ))}
       </div>
-
-      <div className="mx-4 mb-4 bg-white rounded-2xl shadow-sm overflow-hidden">
-        {[
-          ['Total P&L', fmt(d.pnl), d.pnl >= 0 ? 'text-green-600' : 'text-red-500'],
-          ['Total trades', d.trades, 'text-gray-900'],
-          ['Wins', d.wins, 'text-green-600'],
-          ['Losses', d.losses, 'text-red-500'],
-          ['Win rate', `${d.wr}%`, 'text-gray-900'],
-          ['Best trade', fmt(d.best), 'text-green-600'],
-          ['Worst trade', fmt(d.worst), 'text-red-500'],
-          ['Capital in', '₹5,000', 'text-gray-900'],
-          ['Net portfolio', `₹${(5000+d.pnl).toLocaleString()}`, 'text-green-600'],
-        ].map(([k, v, c]) => (
-          <div key={k} className="flex justify-between items-center px-4 py-3 border-b border-gray-50 last:border-0">
-            <span className="text-sm text-gray-500">{k}</span>
-            <span className={`text-sm font-bold ${c}`}>{v}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mx-4 mb-24 bg-white rounded-2xl p-4 shadow-sm">
-        <p className="text-xs text-gray-400 uppercase font-medium mb-3">Day by day</p>
-        {d.bars.map((bar, i) => (
-          <div key={i} className="flex items-center gap-3 mb-2">
-            <span className="text-xs text-gray-500 w-10 font-medium">{bar.label}</span>
-            <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
-              <div className={`h-full rounded-full flex items-center px-3 text-xs font-bold ${bar.pnl >= 0 ? 'bg-green-500 text-white' : 'bg-red-400 text-white'}`}
-                style={{ width: `${Math.max(20, Math.round((Math.abs(bar.pnl) / max) * 90))}%` }}>
-                {fmt(bar.pnl)}
-              </div>
+      <div style={{padding:'14px 16px'}}>
+        <div style={{background:'white',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+          {[['Total P&L',fmt(d.pnl),d.pnl>=0?'#16a34a':'#dc2626'],['Total trades',d.trades,'#111827'],['Wins',d.wins,'#16a34a'],['Losses',d.losses,'#dc2626'],['Win rate',d.wr+'%','#111827'],['Best trade',fmt(d.best),'#16a34a'],['Worst trade',fmt(d.worst),'#dc2626'],['Capital in','₹5,000','#111827'],['Net portfolio','₹'+d.portfolio.toLocaleString(),'#16a34a']].map(([k,v,c],i,arr)=>(
+            <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 18px',borderBottom:i<arr.length-1?'1px solid #f3f4f6':'none'}}>
+              <span style={{fontSize:'14px',color:'#6b7280'}}>{k}</span>
+              <span style={{fontSize:'15px',fontWeight:'700',color:c}}>{v}</span>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <div style={{background:'white',borderRadius:'20px',padding:'16px 18px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+          <p style={{fontSize:'13px',fontWeight:'600',color:'#6b7280',marginBottom:'14px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Day by day</p>
+          {d.bars.map((bar,i)=>{
+            const w=Math.max(12,Math.round((Math.abs(bar.v)/max)*82))
+            const pos=bar.v>=0
+            return (
+              <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
+                <span style={{fontSize:'12px',color:'#9ca3af',width:'38px',fontWeight:'500'}}>{bar.l}</span>
+                <div style={{flex:1,background:'#f3f4f6',borderRadius:'8px',height:'28px',overflow:'hidden'}}>
+                  <div style={{width:w+'%',height:'100%',borderRadius:'8px',background:pos?'#16a34a':'#ef4444',display:'flex',alignItems:'center',paddingLeft:'10px'}}>
+                    <span style={{fontSize:'12px',fontWeight:'700',color:'white',whiteSpace:'nowrap'}}>{fmt(bar.v)}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
