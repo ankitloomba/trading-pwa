@@ -2,11 +2,10 @@ import './globals.css'
 import BottomNav from '../components/BottomNav'
 
 export const metadata = {
-  title: 'Bot Control Center',
-  description: 'Trading bot monitor and control panel',
+  title: 'Intra Gini 🔥',
+  description: 'Intelligent intraday trading bot',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'BotCtrl' },
-  viewport: { width: 'device-width', initialScale: 1, maximumScale: 1, viewportFit: 'cover' }
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Intra Gini' },
 }
 
 export default function RootLayout({ children }) {
@@ -15,8 +14,26 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#16a34a" />
+        <meta name="theme-color" content="#15803d" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+              try {
+                const reg = await navigator.serviceWorker.register('/sw.js')
+                console.log('SW registered')
+
+                // Request notification permission
+                if (Notification.permission === 'default') {
+                  const perm = await Notification.requestPermission()
+                  console.log('Notification permission:', perm)
+                }
+              } catch(e) {
+                console.log('SW failed:', e)
+              }
+            })
+          }
+        `}} />
       </head>
       <body style={{
         maxWidth: '430px',
