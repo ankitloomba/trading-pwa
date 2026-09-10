@@ -1,7 +1,37 @@
 'use client'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import NotifBanner from '../components/NotifBanner'
+
+function NotifBanner() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      setShow(true)
+    }
+  }, [])
+  const enable = async () => {
+    const perm = await Notification.requestPermission()
+    if (perm === 'granted') {
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.register('/sw.js')
+      }
+      new Notification('Intra Gini 🔥', { body: 'Trade alerts enabled!', icon: '/icon-192.png' })
+    }
+    setShow(false)
+  }
+  if (!show) return null
+  return (
+    <div style={{margin:'12px 16px 0',background:'#111827',borderRadius:'16px',padding:'14px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px'}}>
+      <div>
+        <p style={{color:'white',fontSize:'13px',fontWeight:'600',marginBottom:'2px'}}>🔔 Enable trade alerts</p>
+        <p style={{color:'#9ca3af',fontSize:'12px'}}>Get notified on every buy/sell</p>
+      </div>
+      <button onClick={enable} style={{background:'#16a34a',color:'white',border:'none',borderRadius:'10px',padding:'8px 14px',fontSize:'13px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap'}}>
+        Enable
+      </button>
+    </div>
+  )
+}
 
 export default function Home() {
   const [summary, setSummary] = useState({ capital:5000, todayPnl:0, weekPnl:0, winRate:0, trades:0 })
@@ -35,23 +65,14 @@ export default function Home() {
     return()=>{window.removeEventListener('touchstart',onStart);window.removeEventListener('touchmove',onMove);window.removeEventListener('touchend',onEnd)}
   }, [pulling, pullY, refresh])
 
-  const now = new Date()
-  const hour = now.getHours()
+  const hour = new Date().getHours()
   const greeting = hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'
   const fmt = v => v>=0?`+₹${Math.round(v).toLocaleString()}`:`-₹${Math.abs(Math.round(v)).toLocaleString()}`
 
   return (
     <div style={{minHeight:'100dvh',background:'#f2f2f7',transform:`translateY(${pullY}px)`,transition:pullY>0?'none':'transform 0.3s'}}>
-      {(pullY>0||refreshing) && (
-        <div style={{position:'fixed',top:0,left:0,right:0,height:`${pullY||50}px`,background:'rgba(22,163,74,0.1)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999}}>
-          {refreshing
-            ? <div style={{width:'20px',height:'20px',border:'3px solid #16a34a',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>
-            : <span style={{fontSize:'18px',transform:`rotate(${Math.min(pullY/60*180,180)}deg)`,display:'inline-block'}}>↓</span>
-          }
-        </div>
-      )}
+      {(pullY>0||refreshing)&&(<div style={{position:'fixed',top:0,left:0,right:0,height:`${pullY||50}px`,background:'rgba(22,163,74,0.1)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:999}}>{refreshing?<div style={{width:'20px',height:'20px',border:'3px solid #16a34a',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>:<span style={{fontSize:'18px',transform:`rotate(${Math.min(pullY/60*180,180)}deg)`,display:'inline-block'}}>↓</span>}</div>)}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-
       <div style={{background:'linear-gradient(160deg,#15803d 0%,#16a34a 60%,#22c55e 100%)',padding:'56px 20px 28px',paddingTop:'calc(56px + env(safe-area-inset-top))'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
           <div>
@@ -76,15 +97,8 @@ export default function Home() {
           ))}
         </div>
       </div>
-
       <NotifBanner />
-      {!isLive{!isLive&&({!isLive&&((
-        <div style={{margin:'12px 16px 0',background:'#fef9c3',borderRadius:'14px',padding:'10px 14px',display:'flex',gap:'8px',alignItems:'center'}}>
-          <span>⏳</span>
-          <p style={{fontSize:'13px',color:'#854d0e'}}>Sample data · Pull down to refresh · Live after first trade</p>
-        </div>
-      )}
-
+      {!isLive&&(<div style={{margin:'12px 16px 0',background:'#fef9c3',borderRadius:'14px',padding:'10px 14px',display:'flex',gap:'8px',alignItems:'center'}}><span>⏳</span><p style={{fontSize:'13px',color:'#854d0e'}}>Sample data · Pull down to refresh · Live after first trade</p></div>)}
       <div style={{padding:'16px'}}>
         <p style={{fontSize:'13px',fontWeight:'600',color:'#6b7280',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Active bots</p>
         <div style={{background:'white',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
@@ -117,9 +131,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <Link href="/pnl" style={{display:'block',background:'#111827',color:'white',textAlign:'center',padding:'16px',borderRadius:'16px',fontSize:'15px',fontWeight:'700',textDecoration:'none',boxShadow:'0 4px 14px rgba(17,24,39,0.25)'}}>
-          View full P&L report →
-        </Link>
+        <Link href="/pnl" style={{display:'block',background:'#111827',color:'white',textAlign:'center',padding:'16px',borderRadius:'16px',fontSize:'15px',fontWeight:'700',textDecoration:'none',boxShadow:'0 4px 14px rgba(17,24,39,0.25)'}}>View full P&L report →</Link>
       </div>
     </div>
   )
