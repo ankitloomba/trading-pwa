@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import NotifBanner from '../components/NotifBanner'
 
 export default function Home() {
   const [summary, setSummary] = useState({ capital:5000, todayPnl:0, weekPnl:0, winRate:0, trades:0 })
@@ -76,7 +77,8 @@ export default function Home() {
         </div>
       </div>
 
-      {!isLive&&(
+      <NotifBanner />
+      {!isLive{!isLive&&({!isLive&&((
         <div style={{margin:'12px 16px 0',background:'#fef9c3',borderRadius:'14px',padding:'10px 14px',display:'flex',gap:'8px',alignItems:'center'}}>
           <span>⏳</span>
           <p style={{fontSize:'13px',color:'#854d0e'}}>Sample data · Pull down to refresh · Live after first trade</p>
