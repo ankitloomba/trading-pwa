@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head><title>Intra Gini Icon Generator</title></head>
+<body style="background:#111;color:white;font-family:sans-serif;padding:20px;text-align:center">
+<h2>Intra Gini 🔥 Icon Generator</h2>
+<canvas id="c512" width="512" height="512" style="display:none"></canvas>
+<canvas id="c192" width="192" height="192" style="display:none"></canvas>
+<canvas id="preview" width="200" height="200" style="border-radius:44px;margin:20px auto;display:block"></canvas>
+
+<div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+  <button onclick="download(512)" style="background:#22c55e;color:white;border:none;padding:12px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">⬇ icon-512.png</button>
+  <button onclick="download(192)" style="background:#15803d;color:white;border:none;padding:12px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">⬇ icon-192.png</button>
+</div>
+<p style="color:#6b7280;font-size:13px;margin-top:16px">Download both files then upload to trading-pwa/public/ on GitHub</p>
+
+<script>
+function drawIcon(ctx, s) {
+  const r = s * 0.22
+
+  // Rounded rect background
+  ctx.beginPath()
+  ctx.moveTo(r, 0)
+  ctx.lineTo(s - r, 0)
+  ctx.quadraticCurveTo(s, 0, s, r)
+  ctx.lineTo(s, s - r)
+  ctx.quadraticCurveTo(s, s, s - r, s)
+  ctx.lineTo(r, s)
+  ctx.quadraticCurveTo(0, s, 0, s - r)
+  ctx.lineTo(0, r)
+  ctx.quadraticCurveTo(0, 0, r, 0)
+  ctx.closePath()
+  ctx.fillStyle = '#0f4c29'
+  ctx.fill()
+  ctx.clip()
+
+  // Grid lines
+  ctx.strokeStyle = '#1a6b3c'
+  ctx.lineWidth = 1
+  ctx.globalAlpha = 0.5
+  for (let i = 1; i <= 3; i++) {
+    ctx.beginPath(); ctx.moveTo(0, s*i/4); ctx.lineTo(s, s*i/4); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(s*i/4, 0); ctx.lineTo(s*i/4, s); ctx.stroke()
+  }
+  ctx.globalAlpha = 1
+
+  // Chart bars
+  const bars = [
+    [0.14, 0.65, '#1a6b3c'],
+    [0.27, 0.55, '#1d7a44'],
+    [0.40, 0.46, '#22c55e'],
+    [0.54, 0.37, '#22c55e'],
+    [0.68, 0.27, '#4ade80'],
+  ]
+  const bw = s * 0.10
+  bars.forEach(([bx, by, col]) => {
+    ctx.fillStyle = col
+    const x = s*bx, y = s*by, h = s*0.92 - s*by
+    ctx.beginPath()
+    ctx.roundRect(x, y, bw, h, 4)
+    ctx.fill()
+  })
+
+  // Trend line
+  ctx.strokeStyle = '#86efac'
+  ctx.lineWidth = s * 0.012
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  const pts = [[0.19,0.61],[0.32,0.51],[0.45,0.42],[0.59,0.33],[0.73,0.23]]
+  pts.forEach(([x,y],i) => i===0 ? ctx.moveTo(s*x, s*y) : ctx.lineTo(s*x, s*y))
+  ctx.stroke()
+
+  // Arrow
+  const ax = s*0.73, ay = s*0.23
+  ctx.fillStyle = '#86efac'
+  ctx.beginPath()
+  ctx.moveTo(ax, ay - s*0.06)
+  ctx.lineTo(ax + s*0.05, ay + s*0.03)
+  ctx.lineTo(ax - s*0.05, ay + s*0.03)
+  ctx.closePath()
+  ctx.fill()
+
+  // Flame
+  const fc = s * 0.50
+  ctx.fillStyle = '#fbbf24'
+  ctx.beginPath()
+  ctx.ellipse(fc, s*0.14, s*0.07, s*0.10, 0, 0, Math.PI*2)
+  ctx.fill()
+  ctx.fillStyle = '#f97316'
+  ctx.beginPath()
+  ctx.ellipse(fc - s*0.01, s*0.16, s*0.04, s*0.07, 0, 0, Math.PI*2)
+  ctx.fill()
+  ctx.fillStyle = '#fef08a'
+  ctx.beginPath()
+  ctx.ellipse(fc, s*0.18, s*0.02, s*0.04, 0, 0, Math.PI*2)
+  ctx.fill()
+}
+
+// Draw preview
+const preview = document.getElementById('preview')
+const pc = preview.getContext('2d')
+pc.save()
+drawIcon(pc, 200)
+pc.restore()
+
+function download(size) {
+  const canvas = document.getElementById('c' + size)
+  const ctx = canvas.getContext('2d')
+  ctx.save()
+  drawIcon(ctx, size)
+  ctx.restore()
+  const a = document.createElement('a')
+  a.download = 'icon-' + size + '.png'
+  a.href = canvas.toDataURL('image/png')
+  a.click()
+}
+</script>
+</body>
+</html>
